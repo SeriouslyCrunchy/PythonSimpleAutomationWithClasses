@@ -1,6 +1,6 @@
 #List of main commands that can be added to the command list and so require classes : click, drag, text, runTask, closeTask, wait 
 #Other commands that cannot be added to the command list : printHelp, showPoint, viewList, executeCommands, finish
-import pyautogui, subprocess, time, sys, subprocess #imports the python automation module
+import pyautogui, subprocess, time, sys, subprocess, pickle #imports the python automation module
 
 class Command():    #base class that defines a command
     def __init__(self,commandID,commandName):   #initialises basic command values, all commands will have commandID and name
@@ -98,6 +98,30 @@ def viewList() :
     for i in range(len(commandList)) : 
         commandList[i].showCommand()
 
+def clearList() :
+    print('Clearing command list...')
+    commandList.clear()
+    global currentCommandID
+    currentCommandID=0
+
+def saveList(saveTarget) :
+    print('Saving command list...')
+    with open(saveTarget+'.pkl','wb') as file:   #create new file with the given name using binary writing
+        pickle.dump((commandList),file)   #dump values into file
+
+
+
+def loadList(loadTarget) :
+    print('Loading command list...')
+    global commandList
+    commandList.clear()
+    with open(loadTarget+'.pkl','rb') as loadedFile:   #open file using binary reading
+        loadedList = pickle.load(loadedFile)     #the loaded items are equal to pickle.load called on the loaded file
+        commandList = loadedList
+    global currentCommandID
+    currentCommandID=len(commandList)
+
+
 def finish() :
     print('Shutting down...')
     sys.exit()
@@ -141,12 +165,12 @@ def addCommand(commandID,commandName,values) :
         currentCommandID+=1
 
 #Startup and welcome
-print('Welcome to Crunch Simple Automation! Now with classes and inheritance!')
+print('Welcome to Crunch Simple Automation! Now with classes, inheritance, loading and saving!')
 print('Command list :')
 print('Automation commands :')
 print('clickPoint, dragBetweenPoints, enterText, openFile, endProcess, wait')
 print('Other commands :')
-print('printHelp, viewList, showPoint, runCommands, finish')
+print('printHelp, viewList, clearList, save, load, showPoint, runCommands, finish')
 currentCommandID = 0   #tracks command number in the list
 commandList : list[Command] = [] #creates an empty list of command classes
 while True :    #this loop is always on until the program is closed
@@ -189,6 +213,21 @@ while True :    #this loop is always on until the program is closed
             printHelp()
         case 'viewList':
             viewList()
+        case 'clearList':
+            print('This will clear the command list. Are you sure? Enter "yes" to confirm')
+            userConfirmClear = input()
+            if userConfirmClear=='yes':
+                clearList()
+            else:
+                print('List clear aborted')
+        case 'save':
+            print('Enter in a file name to save to. Will be overwritten if a file already exists')
+            userConfirmSave = input()
+            saveList(userConfirmSave)
+        case 'load':
+            print('Enter in a file name to load from. Current command list will be overwritten')
+            userConfirmLoad = input()
+            loadList(userConfirmLoad)
         case 'showPoint':
             showPoint()
         case 'runCommands':
